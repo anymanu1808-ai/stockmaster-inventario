@@ -223,7 +223,14 @@
     <h2>📋 Inventario Actual</h2>
     <ul id="inventory-list"></ul>
   </div>
+<div style="margin-top: 20px; text-align: center;">
+    <button class="action" onclick="exportarExcel()" style="background-color: #4CAF50;">
+        📊 Exportar a Excel
+    </button>
+</div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="script.js"></script>
   <script>
     // La clave que usaremos en localStorage para guardar los datos
     const STORAGE_KEY = "stockMasterInventario";
@@ -248,7 +255,28 @@
         }
       }, 3000);
     };
+function exportarExcel() {
+    // 1. Verificar si hay datos
+    if (Object.keys(inventario).length === 0) {
+        return alert("No hay productos en el inventario para exportar.");
+    }
 
+    // 2. Preparar los datos (Convertir objeto a array de arrays)
+    const datosCuerpo = Object.entries(inventario).map(([nombre, cantidad]) => [nombre, cantidad]);
+    const encabezados = [["Producto", "Cantidad en Stock"]];
+    const datosFinales = encabezados.concat(datosCuerpo);
+
+    // 3. Crear el libro de trabajo (Workbook)
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(datosFinales);
+
+    // 4. Añadir la hoja al libro
+    XLSX.utils.book_append_sheet(wb, ws, "Inventario Actual");
+
+    // 5. Generar la descarga del archivo
+    const fecha = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `Inventario_StockMaster_${fecha}.xlsx`);
+}
     function validarLogin() {
       const user = document.getElementById("usuario").value.trim();
       const pass = document.getElementById("contrasena").value.trim();
@@ -317,4 +345,5 @@
     }
   </script>
 </body>
+
 </html>
