@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StockMaster - Sistema de Inventario CMYK MARCA</title>
+  <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/CMYK_color_model.svg/1024px-200px-CMYK_color_model.svg.png" type="image/png" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Estilo del cuerpo con fondo de tintas de sublimación */
+    body {
+      font-family: "Segoe UI", sans-serif;
+      color: #333;
+      /* Fondo de tintas de sublimación */
+      background-color: #f5f7fa;
+      background-image:
+        radial-gradient(circle at 10% 20%, #ffeb3b40 0%, transparent 10%), /* Amarillo (Y) */
+        radial-gradient(circle at 90% 80%, #e91e6340 0%, transparent 10%), /* Magenta (M) */
+        radial-gradient(circle at 50% 50%, #00bcd440 0%, transparent 10%), /* Cian (C) */
+        radial-gradient(circle at 25% 75%, #21212140 0%, transparent 8%);  /* Negro (K) */
+      background-size: 80px 80px;
+      background-repeat: repeat;
+    }
+
+    :root {
+      --cyan: #00bcd4;
+      --magenta: #e91e63;
+      --yellow: #ffeb3b;
+      --black: #212121;
+    }
+
+    /* LANDING */
+    #landing {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      /* Nuevo fondo con un degradado de los colores CMYK para un estilo de tinta */
+      background: linear-gradient(135deg, var(--cyan) 0%, var(--magenta) 33%, var(--yellow) 66%, var(--black) 100%);
+      color: white;
+      animation: fadeIn 1s ease;
+    }
+    #landing img {
+      width: 100px;
+      margin-bottom: 20px;
+      animation: pulse 2s infinite alternate;
+    }
+    #landing h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5); /* Sombra para mejor lectura */
+    }
+    #landing p {
+      font-size: 1.2em;
+      opacity: 0.9;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Sombra para mejor lectura */
+    }
+
+    /* LOGIN */
+    #login {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      /* Nuevo fondo con un degradado de los colores CMYK para un estilo de tinta */
+      background: linear-gradient(-135deg, var(--cyan) 0%, var(--magenta) 33%, var(--yellow) 66%, var(--black) 100%);
+      color: white;
+      animation: fadeIn 0.8s ease;
+    }
+    #login h1 {
+      font-size: 2.2em;
+      margin-bottom: 15px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5); /* Sombra para mejor lectura */
+    }
+    /* Estilo para el formulario dentro de #login */
+    #login form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #login input {
+      padding: 10px;
+      margin: 10px;
+      width: 250px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    #login button {
+      background-color: var(--yellow);
+      color: var(--black);
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.2s;
+    }
+    #login button:hover { transform: scale(1.05); }
+    #error { color: #ffdddd; margin-top: 10px; }
+
+    /* APP */
+    #app {
+      display: none;
+      padding: 20px;
+      max-width: 900px;
+      margin: 40px auto;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 0.6s ease;
+    }
+    header {
+      background: linear-gradient(90deg, var(--cyan), var(--magenta), var(--yellow));
+      color: var(--black);
+      text-align: center;
+      /* Se aumentó el padding para dar espacio al botón en la parte inferior */
+      padding: 15px 0;
+      padding-bottom: 40px; /* Nuevo espacio en la parte inferior del header */
+      border-radius: 10px;
+      font-weight: bold;
+      position: relative;
+    }
+    #logout {
+      position: absolute;
+      right: 20px;
+      /* Posicionado abajo en lugar de arriba */
+      top: auto;
+      bottom: 10px; 
+      /* Fin de cambios de posición */
+      background-color: var(--black);
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #logout:hover { background-color: var(--magenta); }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 30px;
+    }
+    .control-group {
+      background-color: #fafafa;
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 5px solid var(--cyan);
+    }
+    .control-group:nth-child(2) { border-left-color: var(--magenta); }
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button.action {
+      margin-top: 10px;
+      background-color: var(--cyan);
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button.action:hover { background-color: var(--magenta); }
+
+    h2 { color: var(--black); margin-bottom: 10px; }
+    #inventory-list { list-style: none; padding: 0; }
+    #inventory-list li {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
+  </style>
+</head>
+<body>
+
+  <section id="landing">
+    <h1>Bienvenido a StockMaster</h1>
+    <p>Optimizando tu inventario con estilo y precisión.</p>
+  </section>
+
+  <section id="login">
+    <h1>Iniciar Sesión</h1>
+    <form id="login-form">
+      <input type="text" id="usuario" placeholder="Usuario" required />
+      <input type="password" id="contrasena" placeholder="Contraseña" required />
+      <button type="submit">Entrar</button>
+    </form>
+    <p id="error"></p>
+  </section>
+
+  <div id="app">
+    <header>
+      <h1>📦 StockMaster - Inventario CMYK MARCA </h1>
+      <button id="logout" onclick="cerrarSesion()">Cerrar sesión</button>
+    </header>
+    <div class="controls">
+      <div class="control-group">
+        <h2>➕ Ingresar Productos</h2>
+        <input type="text" id="input-nombre-llegada" placeholder="Nombre del producto" />
+        <input type="number" id="input-cantidad-llegada" value="1" min="1" />
+        <button class="action" onclick="ingresarProducto()">Registrar llegada</button>
+      </div>
+      <div class="control-group">
+        <h2>➖ Retirar Productos</h2>
+        <input type="text" id="input-nombre-retiro" placeholder="Nombre del producto" />
+        <input type="number" id="input-cantidad-retiro" value="1" min="1" />
+        <button class="action" onclick="retirarProducto()">Registrar gasto</button>
+      </div>
+    </div>
+    <h2>📋 Inventario Actual</h2>
+    <ul id="inventory-list"></ul>
+  </div>
+
+  <script>
+    // La clave que usaremos en localStorage para guardar los datos
+    const STORAGE_KEY = "stockMasterInventario";
+    
+    // 1. Inicializa el inventario cargando desde localStorage o un objeto vacío
+    let inventario = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+
+    window.onload = () => {
+      // Intenta cargar el inventario al inicio y actualizar la vista
+      actualizarInventarioVista();
+      
+      setTimeout(() => {
+        document.getElementById("landing").style.display = "none";
+        document.getElementById("login").style.display = "flex";
+        
+        const loginForm = document.getElementById("login-form");
+        if (loginForm) {
+            loginForm.addEventListener("submit", function(event) {
+                event.preventDefault(); 
+                validarLogin(); 
+            });
+        }
+      }, 3000);
+    };
+
+    function validarLogin() {
+      const user = document.getElementById("usuario").value.trim();
+      const pass = document.getElementById("contrasena").value.trim();
+      const error = document.getElementById("error");
+      if (user === "admin" && pass === "1234") {
+        error.textContent = "";
+        document.getElementById("login").style.display = "none";
+        document.getElementById("app").style.display = "block";
+        // Al entrar, aseguramos que la lista se muestre correctamente
+        actualizarInventarioVista(); 
+      } else {
+        error.textContent = "⚠️ Usuario o contraseña incorrectos.";
+      }
+    }
+
+    function cerrarSesion() {
+      document.getElementById("app").style.display = "none";
+      document.getElementById("usuario").value = "";
+      document.getElementById("contrasena").value = "";
+      document.getElementById("login").style.display = "flex";
+    }
+
+    // 2. Función para guardar el inventario en localStorage
+    function guardarInventario() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(inventario));
+    }
+    
+    function ingresarProducto() {
+      const nombre = document.getElementById("input-nombre-llegada").value.trim();
+      const cantidad = parseInt(document.getElementById("input-cantidad-llegada").value);
+      if (!nombre || cantidad <= 0) return alert("Datos inválidos.");
+      inventario[nombre] = (inventario[nombre] || 0) + cantidad;
+      
+      // Llama a la función de actualización y guardado
+      actualizarInventario(); 
+    }
+    
+    function retirarProducto() {
+      const nombre = document.getElementById("input-nombre-retiro").value.trim();
+      const cantidad = parseInt(document.getElementById("input-cantidad-retiro").value);
+      if (!nombre || cantidad <= 0) return alert("Datos inválidos.");
+      if (!inventario[nombre]) return alert("El producto no existe.");
+      if (inventario[nombre] < cantidad) return alert("No hay suficiente stock.");
+      inventario[nombre] -= cantidad;
+      if (inventario[nombre] === 0) delete inventario[nombre];
+      
+      // Llama a la función de actualización y guardado
+      actualizarInventario(); 
+    }
+    
+    // Función central que actualiza la vista Y guarda los datos.
+    function actualizarInventario() {
+        guardarInventario(); // <--- Paso clave: Guardar antes de actualizar la vista
+        actualizarInventarioVista();
+    }
+    
+    // Función para solo actualizar la vista (separada para mejor claridad)
+    function actualizarInventarioVista() {
+      const lista = document.getElementById("inventory-list");
+      lista.innerHTML = "";
+      for (const producto in inventario) {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${producto}</strong> <span>${inventario[producto]} unidades</span>`;
+        lista.appendChild(li);
+      }
+    }
+  </script>
+</body>
+</html>
