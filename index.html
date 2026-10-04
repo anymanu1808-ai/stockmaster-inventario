@@ -4,7 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>StockMaster - Sistema de Inventario CMYK MARCA</title>
-  <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/CMYK_color_model.svg/1024px-200px-CMYK_color_model.svg.png" type="image/png" />
+  <meta name="theme-color" content="#212121" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="StockMaster" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" type="image/png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     /* Estilo del cuerpo con fondo de tintas de sublimación */
@@ -180,6 +187,23 @@
       border-bottom: 1px solid #eee;
     }
 
+
+    /* MÓVIL / APP */
+    html { -webkit-tap-highlight-color: transparent; }
+    body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+    input, button { font-size: 16px; } /* evita zoom automático en iOS */
+    #install-btn { display: none; margin-top: 14px; background: white; color: var(--black); border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    @media (max-width: 600px) {
+      #app { margin: 10px; padding: 12px; }
+      .controls { grid-template-columns: 1fr; }
+      header h1 { font-size: 1.2em; padding: 0 10px; }
+      #landing h1 { font-size: 1.8em; text-align: center; padding: 0 16px; }
+      #landing p { text-align: center; padding: 0 16px; }
+      #login input { width: 80vw; max-width: 300px; }
+      button.action { width: 100%; padding: 12px; }
+    }
+    @media (display-mode: standalone) { body { user-select: none; } input { user-select: text; } }
+
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
   </style>
@@ -199,6 +223,7 @@
       <button type="submit">Entrar</button>
     </form>
     <p id="error"></p>
+    <button id="install-btn" type="button">📲 Instalar app</button>
   </section>
 
   <div id="app">
@@ -222,16 +247,33 @@
     </div>
     <h2>📋 Inventario Actual</h2>
     <ul id="inventory-list"></ul>
+    <div style="margin-top: 20px; text-align: center;">
+      <button class="action" onclick="exportarExcel()" style="background-color: #4CAF50;">📊 Exportar a Excel</button>
+    </div>
   </div>
-<div style="margin-top: 20px; text-align: center;">
-    <button class="action" onclick="exportarExcel()" style="background-color: #4CAF50;">
-        📊 Exportar a Excel
-    </button>
-</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="script.js"></script>
   <script>
+
+    // --- PWA: service worker e instalación ---
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(console.error));
+    }
+    let promptInstalacion;
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      promptInstalacion = e;
+      document.getElementById("install-btn").style.display = "inline-block";
+    });
+    document.getElementById("install-btn").addEventListener("click", async () => {
+      if (!promptInstalacion) return;
+      promptInstalacion.prompt();
+      await promptInstalacion.userChoice;
+      promptInstalacion = null;
+      document.getElementById("install-btn").style.display = "none";
+    });
+    window.addEventListener("appinstalled", () => { document.getElementById("install-btn").style.display = "none"; });
+
     // La clave que usaremos en localStorage para guardar los datos
     const STORAGE_KEY = "stockMasterInventario";
     
